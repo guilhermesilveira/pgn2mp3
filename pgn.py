@@ -19,7 +19,17 @@ def parse_chess(s, core_key):
         if s[pos] == '{':
             pos_end = s.find('}', pos) + 1
             name = s[pos + 1:pos_end - 1]
-            current_branch.set_name(name)
+            # remove any comments from within it
+            # comments are contained within []
+            while name.find('[') != -1:
+                start = name.find('[')
+                end = name.find(']')
+                name = name[:start] + name[end + 1:]
+            # strips it
+            name = name.strip()
+            # if any name is left
+            if name:
+                current_branch.set_name(name)
             pos = pos_end
 
         elif s[pos] == '(':

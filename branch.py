@@ -37,10 +37,14 @@ class Branch:
         if parent:
             self.moves = parent.moves.copy()
             self.next_one = parent.next_one
-            # copies the name with the number
-            self.name = parent.name + f" #{branch_counter}"
+            # if the parent name begins wqith branch
+            if parent.name.startswith("branch"):
+                self.name = f"branch {branch_counter}"
+            else:
+                # copies the name with the number
+                self.name = parent.name + f" #{branch_counter}"
         else:
-            self.name = f"branch #{branch_counter}"
+            self.name = f"branch {branch_counter}"
             self.moves = []
             self.next_one = WHITE
         print(f"Created {self.name}")

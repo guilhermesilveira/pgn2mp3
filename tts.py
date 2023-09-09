@@ -8,7 +8,8 @@ from cache import Cache
 
 class GoogleVoicer:
     def __init__(self, core_key: str):
-        self.cache = Cache(f"output/{core_key}")
+        self.cache = Cache(f"output/raw/{core_key}")
+        self.slow_cache = Cache(f"output/74/{core_key}")
         credentials = service_account.Credentials.from_service_account_file(
             'keys/autodub-391820-eaa04bea1213.json')
         self.client = texttospeech.TextToSpeechClient(credentials=credentials)
@@ -30,7 +31,7 @@ class GoogleVoicer:
         name = name.replace(":", "_")
         name = name.replace(" ", "_")
         name = name.replace("?", "_")
-        cached = self.cache.get(name, "mp3")
+        cached = self.slow_cache.get(name, "mp3")
         if cached:
             return cached
 
@@ -48,9 +49,10 @@ class GoogleVoicer:
         # ffmpeg file to slow down to 74% with same file name but folder same_folder/74/
         # ffmpeg -i file -filter:a "atempo=0.74" -vn new_file
         # create the string
-        new_name = self.cache.get_key_path(f'74/{name}', 'mp3')
-        self.cache.check_dir('74')
-        ffmpeg_string = f"ffmpeg -y -i {file} -filter:a \"atempo=0.74\" -vn {new_name}"
-        # runs it
-        os.system(ffmpeg_string)
+        new_name = self.slow_cache.get_key_path(name, 'mp3')
+        ffmpeg_string = f"ffmpeg -y -i '{file}' -filter:a \"atempo=0.74\" -vn '{new_name}'"
+        # runs it, if fails, stop
+        if os.system(ffmpeg_string):
+            logging.error(f"Failed to run ffmpeg command: {ffmpeg_string}")
+            exit(1)
         return new_name
