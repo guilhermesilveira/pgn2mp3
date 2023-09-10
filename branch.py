@@ -2,7 +2,7 @@ import re
 
 branch_counter = 0
 
-PAUSE = "<break time=\"2s\"/>"
+PAUSE = "<break time=\"2.5s\"/>"
 
 def translate_move(move):
     translation = {
@@ -13,38 +13,43 @@ def translate_move(move):
         "N": "knight",
         "O-O": "kingside castle",
         "O-O-O": "queenside castle",
-        "+": " check",
-        "#": " mate"
     }
+
+    extras = {
+        "+": " check ",
+        "x": " captures ",
+        "#": " mate "
+    }
+
+    found = False
     # if any of the keys is found, replace it
     for symbol, name in translation.items():
         if symbol in move:
             move = move.replace(symbol, f"{name} ") + PAUSE
-            return move
+            break
     # if no piece symbol is found, then it's a pawn move
-    move = "pawn " + move + PAUSE
+    if not found:
+        move = "pawn " + move + PAUSE
+
+    for symbol, name in extras.items():
+        if symbol in move:
+            move = move.replace(symbol, f"{name} ") + PAUSE
     return move
 
 WHITE = "white"
 BLACK = "black"
 
 class Branch:
-    def __init__(self, parent=None):
-        self.parent = parent
+    def __init__(self, title, parent=None):
         global branch_counter
+        self.name = f"{title} branch {branch_counter}"
+        self.parent = parent
         branch_counter += 1
         # copy moves from parent if parent
         if parent:
             self.moves = parent.moves.copy()
             self.next_one = parent.next_one
-            # if the parent name begins wqith branch
-            if parent.name.startswith("branch"):
-                self.name = f"branch {branch_counter}"
-            else:
-                # copies the name with the number
-                self.name = parent.name + f" #{branch_counter}"
         else:
-            self.name = f"branch {branch_counter}"
             self.moves = []
             self.next_one = WHITE
         print(f"Created {self.name}")
@@ -53,13 +58,13 @@ class Branch:
         return self.name
 
     def add_moves(self, moves: str):
-        print(f"Adding {moves}")
+        # print(f"Adding {moves}")
         # split moves on regex "digits with dot", keeping the number as a separate variable
         moves_list = re.split(r" *(\d+\.) *", moves)
         # remove empty ones
         moves_list = [move for move in moves_list if move.strip()]
 
-        print(f"Moves list: {moves_list}")
+        # print(f"Moves list: {moves_list}")
         current_move_number = 0
         for move in moves_list:
             move = move.strip()
@@ -90,16 +95,15 @@ class Branch:
             # single move no color
             move = translate_move(move)
             self.moves.append(f"{current_move_number} white {move}")
-        print(f"Moves list: {self.moves}")
+        # print(f"Moves list: {self.moves}")
 
     def set_name(self, comment):
         print(f"Setting name {comment}")
-        self.name = comment.strip()
+        self.name += " " + comment.strip()
 
 
 def printBranch(branch, voicer):
     moves = branch.moves
     spoken_text = branch.get_name() + PAUSE + '. '.join(moves) + '.'
-    print("Printing branch ---------")
-    print(spoken_text)
+    print("Printing: " + branch.get_name())
     voicer.speak(branch.get_name(), spoken_text)

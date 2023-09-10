@@ -12,7 +12,7 @@ def parse_chess(s, core_key):
     voicer = GoogleVoicer(core_key)
 
     pos = 0
-    branches = [Branch()]
+    branches = [Branch(core_key)]
     current_branch = branches[0]
 
     while pos < len(s):
@@ -33,7 +33,7 @@ def parse_chess(s, core_key):
             pos = pos_end
 
         elif s[pos] == '(':
-            new_branch = Branch(parent=current_branch)
+            new_branch = Branch(core_key, parent=current_branch)
             branches.append(new_branch)
             current_branch = new_branch
             pos += 1
