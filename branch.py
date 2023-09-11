@@ -1,43 +1,12 @@
 import re
+from moves import *
 
 branch_counter = 0
 
-PAUSE = "<break time=\"2.5s\"/>"
-
-def translate_move(move):
-    translation = {
-        "K": "king",
-        "Q": "queen",
-        "R": "rook",
-        "B": "bishop",
-        "N": "knight",
-        "O-O": "kingside castle",
-        "O-O-O": "queenside castle",
-    }
-
-    extras = {
-        "+": " check ",
-        "x": " captures ",
-        "#": " mate "
-    }
-
-    found = False
-    # if any of the keys is found, replace it
-    for symbol, name in translation.items():
-        if symbol in move:
-            move = move.replace(symbol, f"{name} ") + PAUSE
-            break
-    # if no piece symbol is found, then it's a pawn move
-    if not found:
-        move = "pawn " + move + PAUSE
-
-    for symbol, name in extras.items():
-        if symbol in move:
-            move = move.replace(symbol, f"{name} ") + PAUSE
-    return move
 
 WHITE = "white"
 BLACK = "black"
+
 
 class Branch:
     def __init__(self, title, parent=None):
@@ -87,7 +56,8 @@ class Branch:
                         self.next_one = BLACK
                 else:
                     white_move = translate_move(white_move)
-                    self.moves.append(f"{current_move_number} white {white_move}")
+                    self.moves.append(
+                        f"{current_move_number} white {white_move}")
 
                 black_move = translate_move(black_move)
                 self.moves.append(f"{current_move_number} black {black_move}")
