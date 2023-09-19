@@ -4,12 +4,13 @@ from google.cloud import texttospeech_v1 as texttospeech
 from google.oauth2 import service_account
 import os
 from cache import Cache
+import ffmpeg
 
 
 class GoogleVoicer:
-    def __init__(self, core_key: str):
-        self.cache = Cache(f"output/raw/{core_key}")
-        self.slow_cache = Cache(f"output/74/{core_key}")
+    def __init__(self, core_key: str, base_path: str=""):
+        self.cache = Cache(f"output/raw/{base_path}{core_key}")
+        self.slow_cache = Cache(f"output/74/{base_path}{core_key}")
         credentials = service_account.Credentials.from_service_account_file(
             'keys/autodub-391820-eaa04bea1213.json')
         self.client = texttospeech.TextToSpeechClient(credentials=credentials)
@@ -47,13 +48,4 @@ class GoogleVoicer:
         with open(file, 'wb') as out:
             out.write(response.audio_content)
 
-        # ffmpeg file to slow down to 74% with same file name but folder same_folder/74/
-        new_name = self.slow_cache.get_key_path(name, 'mp3')
-        silence_it = " -hide_banner -loglevel panic "
-        ffmpeg_string = f"ffmpeg -y {silence_it} -i '{file}' -filter:a \"atempo=0.74\" -vn '{new_name}'"
-
-        # runs it, if fails, stop
-        if os.system(ffmpeg_string):
-            logging.error(f"Failed to run ffmpeg command: {ffmpeg_string}")
-            exit(1)
-        return new_name
+        return ffmpeg.slowdown(name, file, self.slow_cache)

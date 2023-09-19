@@ -1,4 +1,3 @@
-PAUSE = "<break time=\"2.2s\"/>"
 
 # sequence is important
 _translation_keys = [
@@ -11,23 +10,25 @@ _translation_keys = [
     "O-O",
 ]
 
-def translate_move(move):
 
-    translation = {
-        "K": "king",
-        "Q": "queen",
-        "R": "rook",
-        "B": "bishop",
-        "N": "knight",
-        "O-O": "kingside castle",
-        "O-O-O": "queenside castle",
-    }
+translation = {
+    "K": "king",
+    "Q": "queen",
+    "R": "rook",
+    "B": "bishop",
+    "N": "knight",
+    "O-O": "kingside castle",
+    "O-O-O": "queenside castle",
+}
 
-    extras = {
-        "+": " check",
-        "x": " captures",
-        "#": " mate"
-    }
+extras = {
+    "+": " check",
+    "x": " captures",
+    "#": " mate"
+}
+
+
+def long_move_name(move):
 
     found = False
     # if any of the keys is found, replace it
@@ -44,4 +45,9 @@ def translate_move(move):
     for symbol, name in extras.items():
         if symbol in move:
             move = move.replace(symbol, f"{name} ")
-    return move + PAUSE
+    return move
+
+
+def translate_move(move, pause):
+    move = long_move_name(move)
+    return move + pause
