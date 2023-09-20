@@ -14,6 +14,7 @@ class ChessParser:
         voicer = GoogleVoicer(core_key, base_path)
 
         pos = 0
+        reset_branch_counter()
         branches = [Branch(core_key, memory=memory)]
         current_branch = branches[0]
 
@@ -58,4 +59,5 @@ class ChessParser:
                 move_start = pos
                 while pos < len(s) and s[pos] not in ['{', '(', ')', '*', '\n']:
                     pos += 1
-                current_branch.add_moves(s[move_start:pos])
+                current_move_to_capture = s[move_start:pos]
+                current_branch.add_moves(current_move_to_capture)

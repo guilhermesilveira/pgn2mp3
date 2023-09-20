@@ -10,6 +10,11 @@ SHORT_PAUSE = "<break time=\"0.5s\"/>"
 LONG_PAUSE = "<break time=\"2.2s\"/>"
 
 
+def reset_branch_counter():
+    global branch_counter
+    branch_counter = 0
+
+
 class Memory:
     memorized = []
 
@@ -25,7 +30,16 @@ class Memory:
 
 
 def remove_empty(moves_list: list):
-    return [move for move in moves_list if move.strip()]
+    return [move.strip() for move in moves_list if move.strip()]
+
+
+def get_moves_from_str(moves: str):
+    # print(f"Adding {moves}")
+    # split moves on regex "digits with dot", keeping the number as a separate variable
+    moves_list = re.split(r" *(\d+\.) *", moves)
+    # remove empty ones
+    moves_list = remove_empty(moves_list)
+    return moves_list
 
 
 class Branch:
@@ -66,16 +80,11 @@ class Branch:
         return LONG_PAUSE
 
     def add_moves(self, moves: str):
-        # print(f"Adding {moves}")
-        # split moves on regex "digits with dot", keeping the number as a separate variable
-        moves_list = re.split(r" *(\d+\.) *", moves)
-        # remove empty ones
-        moves_list = remove_empty(moves_list)
+        moves_list = get_moves_from_str(moves)
 
         # print(f"Moves list: {moves_list}")
         current_move_number = 0
         for move in moves_list:
-            move = move.strip()
             # if matches digit with dot, then it's a move number
             if re.match(r"\d+\.", move):
                 current_move_number = int(move[:-1])
@@ -120,4 +129,5 @@ def printBranch(branch, voicer):
     moves = branch.moves
     spoken_text = branch.get_name() + LONG_PAUSE + '. '.join(moves) + '.'
     print("Printing: " + branch.get_name())
+
     voicer.speak(branch.get_name(), spoken_text)
