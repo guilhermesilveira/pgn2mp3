@@ -1,5 +1,5 @@
 import re
-from moves import *
+from moves import translate_move
 
 branch_counter = 0
 
@@ -60,7 +60,9 @@ class Branch:
             self.next_one = WHITE
             self.memorized_so_far = True
             self.full_string = ""
-        # print(f"Created {self.name}")
+
+    def move_count():
+        return self.moves.count()
 
     def update_memory(self, move: str):
         self.full_string += f",{move}"
@@ -82,7 +84,6 @@ class Branch:
     def add_moves(self, moves: str):
         moves_list = get_moves_from_str(moves)
 
-        # print(f"Moves list: {moves_list}")
         current_move_number = 0
         for move in moves_list:
             # if matches digit with dot, then it's a move number
@@ -118,16 +119,6 @@ class Branch:
             self.update_memory(move)
             move = translate_move(move, self.current_pause())
             self.moves.append(f"{current_move_number} white {move}")
-        # print(f"Moves list: {self.moves}")
 
     def set_name(self, comment):
-        # print(f"Setting name {comment}")
         self.name += " " + comment.strip()
-
-
-def printBranch(branch, voicer):
-    moves = branch.moves
-    spoken_text = branch.get_name() + LONG_PAUSE + '. '.join(moves) + '.'
-    print("Printing: " + branch.get_name())
-
-    voicer.speak(branch.get_name(), spoken_text)

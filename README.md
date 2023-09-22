@@ -5,6 +5,10 @@
 - It requires cloud text to speech from google, which requires an API key file on the keys folder
 - An easy change can make it use a free text 2 speech without an api key
 
+## TODO
+
+- ensure the exact number was printed
+
 ## How to install and run tests:
 
 ```
