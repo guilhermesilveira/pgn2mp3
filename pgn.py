@@ -38,16 +38,14 @@ def _process_file(filename: str,
                   base_path: str):
     with open(filename, 'r') as f_in:
         contents = f_in.read()
-        events = contents.split('\n\n')
+        events = contents.split('\n\n\n')
         for event in events:
             if event.startswith('[Event "'):
                 name = event.split('"')[1]
-                moves = event.split('1. ')[1]
-                print("-----------------------")
-                print(name)
-                print(moves)
-                print()
-                parser.parse(memory, name, moves, base_path)
+                # include '1. ' in the second element
+                moves_list = event.split('1. ', 1)
+                moves = '1. ' + moves_list[1] if len(moves_list) > 1 else ''
+                parser.parse(memory, moves, name, base_path)
 
 
 class ChessParser:
@@ -56,7 +54,8 @@ class ChessParser:
                    base_path: str):
         _process_file(filename, self, memory, base_path)
 
-    def parse(self, memory, s, core_key, base_path=""):
+    def parse(self, memory: Memory,
+              s: str, core_key, base_path=""):
         voicer = GoogleVoicer(core_key, base_path)
 
         pos = 0

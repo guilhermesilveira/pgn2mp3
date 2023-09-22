@@ -61,8 +61,9 @@ class Branch:
             self.memorized_so_far = True
             self.full_string = ""
 
-    def move_count():
-        return self.moves.count()
+    def move_count(self):
+        # length of moves
+        return len(self.moves)
 
     def update_memory(self, move: str):
         self.full_string += f",{move}"
