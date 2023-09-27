@@ -8,7 +8,7 @@ import ffmpeg
 
 
 class GoogleVoicer:
-    def __init__(self, core_key: str, base_path: str=""):
+    def __init__(self, core_key: str, base_path: str = ""):
         self.cache = Md5Cache("output/cache/")
         self.slow_cache = Cache(f"output/74/{base_path}{core_key}")
         credentials = service_account.Credentials.from_service_account_file(
@@ -35,7 +35,7 @@ class GoogleVoicer:
         name = name.replace("?", "_")
         cached = self.slow_cache.get(name, "mp3")
         if cached:
-            return cached
+            return False
 
         caption = f"<speak>{caption}</speak>"
         # tqdm.write(f"Speaking: {caption}")
@@ -48,4 +48,5 @@ class GoogleVoicer:
         with open(file, 'wb') as out:
             out.write(response.audio_content)
 
-        return ffmpeg.slowdown(name, file, self.slow_cache)
+        ffmpeg.slowdown(name, file, self.slow_cache)
+        return True

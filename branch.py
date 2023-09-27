@@ -1,5 +1,5 @@
 import re
-from moves import translate_move
+from moves import long_move_name
 
 branch_counter = 0
 
@@ -8,6 +8,34 @@ WHITE = "white"
 BLACK = "black"
 SHORT_PAUSE = "<break time=\"0.5s\"/>"
 LONG_PAUSE = "<break time=\"2.2s\"/>"
+
+
+def _clear_comment(comment: str):
+    # removes everything between [ and ]
+    return re.sub(r"\[.*?\]", "", comment).strip()
+
+
+class Move:
+    def __init__(self, color, san, comment):
+        self.color = color
+        self.san = san
+        self.comment = _clear_comment(comment)
+
+    def to_spoken_str(self, pause_type):
+        if self.comment:
+            extra = " (" + self.comment + ") "
+        else:
+            extra = ""
+        return long_move_name(self.san) + extra + pause_type
+
+    def to_simple_str(self):
+        return self.san
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return f"{self.color} {self.san} {self.comment}"
 
 
 def reset_branch_counter():
@@ -38,97 +66,59 @@ class Memory:
         return False
 
 
-def remove_empty(moves_list: list):
-    return [move.strip() for move in moves_list if move.strip()]
+class Moves:
+    def __init__(self, moves: list[Move]):
+        self.moves = moves
 
+    def simple_str(self):
+        moves_as_str = [str(move.san) for move in self.moves]
+        return ",".join(moves_as_str)
 
-def get_moves_from_str(moves: str):
-    # print(f"Adding {moves}")
-    # split moves on regex "digits with dot", keeping the number as a separate variable
-    moves_list = re.split(r" *(\d+\.) *", moves)
-    # remove empty ones
-    moves_list = remove_empty(moves_list)
-    return moves_list
+    def length(self):
+        return len(self.moves)
+
+    def is_fully_memorized(self, memory: Memory):
+        current_simple_str = ""
+        for i, move in enumerate(self.moves):
+            current_simple_str += "," + move.to_simple_str()
+            if not memory.is_memorized(current_simple_str):
+                return False
+        return True
+
+    def to_spoken_str(self, memory: Memory):
+        current_pause_type = SHORT_PAUSE
+        moves_as_str = []
+        current_simple_str = ""
+        is_memorized = True
+        for move in self.moves:
+            current_simple_str += "," + move.to_simple_str()
+            if is_memorized and not memory.is_memorized(current_simple_str):
+                current_pause_type = LONG_PAUSE
+                is_memorized = False
+            moves_as_str.append(move.to_spoken_str(current_pause_type))
+        return ". ".join(moves_as_str)
 
 
 class Branch:
-    def __init__(self, title, parent=None, memory: Memory = None):
+    def __init__(self, title,
+                 parent=None,
+                 memory: Memory = None,
+                 moves: list = None):
         global branch_counter
         branch_counter += 1
         self.name = f"{title} branch {branch_counter}"
         self.memory = memory
         self.parent = parent
+
         # copy moves from parent if parent
         if parent:
             self.moves = parent.moves.copy()
-            self.next_one = parent.next_one
-            self.memorized_so_far = parent.memorized_so_far
-            self.full_string = parent.full_string
         else:
-            self.moves = []
-            self.next_one = WHITE
-            self.memorized_so_far = True
-            self.full_string = ""
+            self.moves = Moves(moves) if moves is None else Moves(moves)
 
     def move_count(self):
         # length of moves
-        return len(self.moves)
-
-    def update_memory(self, move: str):
-        self.full_string += f",{move}"
-        if not self.memorized_so_far:
-            return
-        if not self.memory.is_memorized(self.full_string):
-            self.memorized_so_far = False
+        return self.moves.length()
 
     def get_name(self):
         return self.name
-
-    # if memorized, short pause
-    # if not memorized, long pause
-    def current_pause(self):
-        if self.memorized_so_far:
-            return SHORT_PAUSE
-        return LONG_PAUSE
-
-    def add_moves(self, moves: str):
-        moves_list = get_moves_from_str(moves)
-
-        current_move_number = 0
-        for move in moves_list:
-            # if matches digit with dot, then it's a move number
-            if re.match(r"\d+\.", move):
-                current_move_number = int(move[:-1])
-                continue
-            # if not, then it's a move
-            # if there is a space in the middle, split into white and black moves
-            if " " in move:
-                # print(move)
-                white_move, black_move = move.split()
-
-                # if white move is .. means this is a black variant
-                # so let's remove the last move from the list
-                if white_move == "..":
-                    # if last one was the same number and black, then remove it
-                    if self.moves[-1].startswith(f"{current_move_number} black"):
-                        self.moves.pop()
-                        self.next_one = BLACK
-                else:
-                    self.update_memory(white_move)
-                    white_move = translate_move(
-                        white_move, self.current_pause())
-                    description = f"{current_move_number} white {white_move}"
-                    self.moves.append(description)
-
-                self.update_memory(black_move)
-                black_move = translate_move(black_move, self.current_pause())
-                description = f"{current_move_number} black {black_move}"
-                self.moves.append(description)
-                continue
-            # single move no color
-            self.update_memory(move)
-            move = translate_move(move, self.current_pause())
-            self.moves.append(f"{current_move_number} white {move}")
-
-    def set_name(self, comment):
-        self.name += " " + comment.strip()

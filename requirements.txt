@@ -1,2 +1,3 @@
 google-cloud-texttospeech==2.14.1
 tqdm==4.65.0
+pgn-parser==1.1.0

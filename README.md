@@ -7,8 +7,7 @@
 
 ## TODO
 
-- read memoryfrom file
-- use pgn-python
+- use move sequence as cache file name
 
 ## How to install and run tests:
 
