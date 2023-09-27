@@ -7,7 +7,8 @@
 
 ## TODO
 
-- ensure the exact number was printed
+- read memoryfrom file
+- use pgn-python
 
 ## How to install and run tests:
 

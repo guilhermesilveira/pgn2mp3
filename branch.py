@@ -21,6 +21,15 @@ class Memory:
     def memorize(self, sequence: str):
         self.memorized.append("," + sequence)
 
+    def read_from_file(self, file_path: str):
+        with open(file_path, "r") as file:
+            # ignore empty lines or lines with #
+            lines = [line.strip() for line in file.readlines()
+                     if line.strip() and not line.strip().startswith("#")]
+            # invoke memorize for each
+            for line in lines:
+                self.memorize(line)
+
     def is_memorized(self, sequence: str):
         for memory in self.memorized:
             if memory.startswith(sequence):

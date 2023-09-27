@@ -3,13 +3,13 @@ import logging
 from google.cloud import texttospeech_v1 as texttospeech
 from google.oauth2 import service_account
 import os
-from cache import Cache
+from cache import Md5Cache, Cache
 import ffmpeg
 
 
 class GoogleVoicer:
     def __init__(self, core_key: str, base_path: str=""):
-        self.cache = Cache(f"output/raw/{base_path}{core_key}")
+        self.cache = Md5Cache("output/cache/")
         self.slow_cache = Cache(f"output/74/{base_path}{core_key}")
         credentials = service_account.Credentials.from_service_account_file(
             'keys/autodub-391820-eaa04bea1213.json')
@@ -44,7 +44,7 @@ class GoogleVoicer:
             input=synthesis_input,
             voice=self.voice,
             audio_config=self.audio_config)
-        file = self.cache.get_key_path(name, "mp3")
+        file = self.cache.get_key_path(caption, "mp3")
         with open(file, 'wb') as out:
             out.write(response.audio_content)
 

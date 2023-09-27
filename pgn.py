@@ -34,7 +34,6 @@ printer = Printer()
 
 def _process_file(filename: str,
                   parser,
-                  memory: Memory,
                   base_path: str):
     with open(filename, 'r') as f_in:
         contents = f_in.read()
@@ -45,22 +44,27 @@ def _process_file(filename: str,
                 # include '1. ' in the second element
                 moves_list = event.split('1. ', 1)
                 moves = '1. ' + moves_list[1] if len(moves_list) > 1 else ''
-                parser.parse(memory, moves, name, base_path)
+                parser.parse(moves, name, base_path)
 
 
 class ChessParser:
 
-    def parse_file(self, filename, memory: Memory,
-                   base_path: str):
-        _process_file(filename, self, memory, base_path)
+    def __init__(self, memory: Memory):
+        self.memory = memory
 
-    def parse(self, memory: Memory,
-              s: str, core_key, base_path=""):
+    def parse_file(self,
+                   filename: str,
+                   base_path: str):
+        _process_file(filename, self, base_path)
+
+    def parse(self,
+              s: str,
+              core_key, base_path=""):
         voicer = GoogleVoicer(core_key, base_path)
 
         pos = 0
         reset_branch_counter()
-        branches = [Branch(core_key, memory=memory)]
+        branches = [Branch(core_key, memory=self.memory)]
         current_branch = branches[0]
 
         while pos < len(s):
@@ -83,7 +87,7 @@ class ChessParser:
             elif s[pos] == '(':
                 new_branch = Branch(core_key,
                                     parent=current_branch,
-                                    memory=memory)
+                                    memory=self.memory)
                 branches.append(new_branch)
                 current_branch = new_branch
                 pos += 1
